@@ -135,14 +135,20 @@ int main(int argc, char *argv[])
 	/* batch creation */
 	int nthreads = atoi(argv[2]);
 	batch batches[nthreads];
-	float load = (SIZE * 3) / (float) nthreads; /* average number of jobs per thread */
 
-	/* divide jobs between threads and start verification */
 	for (size_t i = 0; i < nthreads; i++) {
 		batches[i].id = i + 1;
-		batches[i].start = (int) (i * load);
-		batches[i].end =  (int) ((i + 1) * load);
 		batches[i].nerrors = 0;
+	}
+
+	int load = (SIZE * 3) / nthreads; /* base number of jobs per thread */
+	int rest = (SIZE * 3) % nthreads;
+
+	/* divide jobs between threads and start verification */
+	int delim = 0;
+	for (size_t i = 0; i < nthreads; i++) {
+		batches[i].start = delim;
+		batches[i].end = delim += (i < rest) ? load + 1 : load;
 		pthread_create(&batches[i].tid, NULL, verify_puzzle, (void*) &batches[i]);
 	}
 

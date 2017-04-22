@@ -6,7 +6,14 @@
 \usepackage{fontspec}
 \usepackage[urlcolor=blue, linkcolor=black, colorlinks=true]{hyperref}
 \usepackage{fancyvrb}
-\usepackage{minted}
+\usepackage{geometry}
+
+\geometry{
+    a4paper,
+    left = 20mm,
+    right = 20mm,
+    top = 20mm,
+}
 
 \begin{document}
 \begin{titlepage}
@@ -76,6 +83,19 @@ o mesmo.
 A verificação de um Sudoku pode ser vista como a verificação de suas linhas,
 colunas e regiões, ou seja, podemos dividir o problema em 27 problemas menores,
 checar uma linha, uma coluna ou uma região.
+Essa divisão pode ser atingida pelo calculo \textit{load = (SIZE * 3) / nthreads} e
+\textit{rest = (SIZE * 3)}, onde cada thread fara no mínimo \textit{load} tarefas,
+as \textit{rest} primeiras faram \textit{load} + 1.
+\par
+Além disso existem 3 tipos de tarefas linhas - tipo 0 -, colunas - tipo 1-  e
+regiões - tipo 2-, os tipos são obtidos pelo calculo \textit{job\_type = i / 9}
+onde \textit{i} é o número da tarefa. Dentro dos tipos existem 9 tarefas, nas
+linhas, por exemplo, exitem 9 colunas, de 0 à 8. O mesmo pode ser observado com
+as colunas e regiões. A tarefa pode ser obtida pelo calculo \textit{where = i \% 9}.
+\par
+De forma que, a tarefa 22, é do tipo 2, ou seja região, e consite em verificar
+a 4 região.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

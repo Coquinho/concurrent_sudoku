@@ -1,0 +1,140 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[brazilian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{fontspec}
+\usepackage[urlcolor=blue, linkcolor=black, colorlinks=true]{hyperref}
+\usepackage{fancyvrb}
+\usepackage{minted}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \huge{Universidade Federal de Santa Catarina}
+
+        \vspace{10pt}
+
+        \vspace{85pt}
+
+        \textbf{\LARGE{Sistemas Operacionais I}}
+        \large{\\Trabalho 1}
+        \vspace{160pt}
+
+    \end{center}
+
+    \begin{flushleft}
+        \begin{tabbing}
+            Alunos\qquad\qquad\=
+            Filipe Oliveira de Borba\\
+            \>Guilherme Christopher Michaelsen Cardoso\\
+            \>Lucas Cavalcante Sousa\\\\
+            Professor\> Márcio Bastos Castro \\
+        \end{tabbing}
+    \end{flushleft}
+
+    \begin{center}
+        \vspace{\fill}
+        Florianópolis, \today
+    \end{center}
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\tableofcontents
+\thispagestyle{empty}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\pagenumbering{arabic}
+
+\section{Sudoku}
+O Sudoku é um quebra cabeça de disposição de números. Um Sudoko 9x9, por exemplo,
+está correto quando os números de 1 à 9 estão preenchendo todos os espaços vazios
+de forma a não haver nenhuma repetição nas linhas, colunas nem regiões.
+
+\section{Verificando a Solução de um Sudoku}
+
+Verificar a solução de um Sudoku consiste em checar a existência de números
+repetidos em todas as linhas, colunas e regiões. Para checar uma linha,
+por exemplo, utilizamos um valor inteiro auxiliar \textit{flag} , onde o bit
+\textit{X} de \textit{flag} deve estar no valor lógico um quando o número \textit{X}
+está presente naquela linha.
+A cada número lido da linha, a sua posição correspondente em \textit{flag} é
+marcada atravez de um ou lógico entre a \textit{flag} e 1 deslocado à esquerda
+o número incontrado de vezes, de forma a indicar que o número foi visto.
+Ao final da linha o valor de \textit{flag} deve ser igual a 0x03FE, ou seja,
+ todos os números de 1 à 9 foram encontrados, caso contrario um erro deve ser
+apontado naquela linha. O princípio usado para verificar colunas e regiões é
+o mesmo.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Abordagem paralela}
+A verificação de um Sudoku pode ser vista como a verificação de suas linhas,
+colunas e regiões, ou seja, podemos dividir o problema em 27 problemas menores,
+checar uma linha, uma coluna ou uma região.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Uso}
+
+A a verificação do Sudoku inserido pelo usuário pode ser feito pela linha de comando:
+\begin{verbatim}
+./sudoku <grid para verificação> <número de threads>
+\end{verbatim}
+
+Exemplo de execução correta do programa:
+\begin{verbatim}
+
+./sudoku input_grid_correto.txt 4
+Quebra-cabecas fornecido:
+5 3 4 6 7 8 9 1 2
+6 7 2 1 9 5 3 4 8
+1 9 8 3 4 2 5 6 7
+8 5 9 7 6 1 4 2 3
+4 2 6 8 5 3 7 9 1
+7 1 3 9 2 4 8 5 6
+9 6 1 5 3 7 2 8 4
+2 8 7 4 1 9 6 3 5
+3 4 5 2 8 6 1 7 9
+Erros encontrados: 0
+\end{verbatim}
+
+Exemplo de execução incorreta do programa:
+\begin{verbatim}
+./sudoku input_grid_errado.txt 4
+Quebra-cabecas fornecido:
+3 5 4 6 7 8 9 1 2
+6 7 2 1 9 5 3 4 8
+1 9 8 3 4 2 5 6 7
+8 5 9 7 6 1 4 2 7
+4 2 6 8 5 3 7 9 1
+7 1 3 9 2 4 8 5 6
+9 6 1 5 3 7 2 8 4
+2 8 7 4 1 9 6 3 5
+3 4 5 2 8 6 1 7 8
+Thread 1: Erro na linha 4
+Thread 2: Erro na linha 9
+Thread 2: Erro na coluna 1
+Thread 2: Erro na coluna 2
+Thread 4: Erro na regiao 6
+Thread 4: Erro na regiao 9
+Thread 3: Erro na coluna 9
+Erros encontrados: 7
+\end{verbatim}
+
+É possível perceber que, no primeiro caso a solução fornecida não infringe
+nenhuma das regra do sudoku. Porém, no segundo caso, temos 7 erros, 3 em
+colunas, 2 em linhas e 2 em regiões da solução dada.
+
+\section{Considerações Finais}
+Dado que o problema não é escalavel, ou seja, possui um tamanho fixo, e é um
+problema pequeno, o \textit{overhead} na utilização de mais threads que o
+necessario é substancial, e para esse problema o número de threads "necessárias"
+é bem pequeno,  de forma que a comparação de tempo entra a solução sequencial e
+paralela não obtem resultados muito satisfatorios.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

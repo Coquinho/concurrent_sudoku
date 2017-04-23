@@ -69,8 +69,8 @@ por exemplo, utilizamos um valor inteiro auxiliar \textit{flag} , onde o bit
 \textit{X} de \textit{flag} deve estar no valor lógico um quando o número \textit{X}
 está presente naquela linha.
 A cada número lido da linha, a sua posição correspondente em \textit{flag} é
-marcada atravez de um ou lógico entre a \textit{flag} e 1 deslocado à esquerda
-o número incontrado de vezes, de forma a indicar que o número foi visto.
+marcada através de um ou lógico entre a \textit{flag} e 1 deslocado à esquerda
+o número encontrado de vezes, de forma a indicar que o número foi visto.
 Ao final da linha o valor de \textit{flag} deve ser igual a 0x03FE, ou seja,
  todos os números de 1 à 9 foram encontrados, caso contrario um erro deve ser
 apontado naquela linha.
@@ -99,9 +99,9 @@ apontado naquela linha.
 
 
 O princípio usado para verificar colunas e regiões é o mesmo. Porém para as
-colunas a iteração é feira sobre as linhas ao invez das colunas. O diferencial
+colunas a iteração é feira sobre as linhas ao invés das colunas. O diferencial
 das regiões é que a linha e coluna do primeiro elemento de uma região são dados
-pelos calculos \textit{(region / region\_sz) * region\_sz} para obter a linha e
+pelos cálculos \textit{(region / region\_sz) * region\_sz} para obter a linha e
 \textit{(region \% region\_sz) * region\_sz} para obter a coluna.
 
 \begin{minted}[mathescape,
@@ -149,13 +149,13 @@ onde \textit{i} é o número da tarefa. Dentro dos tipos existem 9 tarefas, nas
 linhas, por exemplo, exitem 9 colunas, de 0 à 8. O mesmo pode ser observado com
 as colunas e regiões. A tarefa pode ser obtida pelo calculo \textit{where = i \% 9}.
 \par
-De forma que, a tarefa 22, é do tipo 2, ou seja região, e consite em verificar
+De forma que, a tarefa 22, é do tipo 2, ou seja região, e consiste em verificar
 a 4 região.
 
 
 \section{Uso}
 
-A a verificação do Sudoku inserido pelo usuário pode ser feito pela linha de comando:
+A verificação do Sudoku inserido pelo usuário pode ser feito pela linha de comando:
 \begin{verbatim}
 ./sudoku <grid para verificação> <número de threads>
 \end{verbatim}
@@ -207,11 +207,11 @@ nenhuma das regra do sudoku. Porém, no segundo caso, temos 7 erros, 3 em
 colunas, 2 em linhas e 2 em regiões da solução dada.
 
 \section{Considerações Finais}
-Dado que o problema não é escalavel, ou seja, possui um tamanho fixo, e é um
+Dado que o problema não é escalável, ou seja, possui um tamanho fixo, e é um
 problema pequeno, o \textit{overhead} na utilização de mais threads que o
-necessario é substancial, e para esse problema o número de threads "necessárias"
+necessário é substancial, e para esse problema o número de threads "necessárias"
 é bem pequeno,  de forma que a comparação de tempo entra a solução sequencial e
-paralela não obtem resultados muito satisfatorios.
+paralela não obtém resultados muito satisfatórios.
 
 
 \end{document}

@@ -7,6 +7,7 @@
 \usepackage[urlcolor=blue, linkcolor=black, colorlinks=true]{hyperref}
 \usepackage{fancyvrb}
 \usepackage{geometry}
+\usepackage{minted}
 
 \geometry{
     a4paper,
@@ -46,13 +47,11 @@
     \end{center}
 \end{titlepage}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
 \tableofcontents
 \thispagestyle{empty}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
 \pagenumbering{arabic}
@@ -74,10 +73,67 @@ marcada atravez de um ou lógico entre a \textit{flag} e 1 deslocado à esquerda
 o número incontrado de vezes, de forma a indicar que o número foi visto.
 Ao final da linha o valor de \textit{flag} deve ser igual a 0x03FE, ou seja,
  todos os números de 1 à 9 foram encontrados, caso contrario um erro deve ser
-apontado naquela linha. O princípio usado para verificar colunas e regiões é
-o mesmo.
+apontado naquela linha.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{minted}[mathescape,
+                numbersep=3pt,
+                gobble=1,
+                fontsize=\small,
+                framesep=2mm]{c}
+
+    /* checks row correcteness */
+    int check_row(int id, int row)
+    {
+        int flag = 0x0;
+        for (int i = 0; i < SIZE; i++)
+            flag |= 1 << puzzle[row][i];
+
+        if (flag == 0x03FE) /* 0x03FE means all numbers from 1 to 9 are present */
+            return 0;
+
+        printf("Thread %d: Erro na linha %d\n", id, row + 1);
+        return 1;
+    }
+
+\end{minted}
+
+
+O princípio usado para verificar colunas e regiões é o mesmo. Porém para as
+colunas a iteração é feira sobre as linhas ao invez das colunas. O diferencial
+das regiões é que a linha e coluna do primeiro elemento de uma região são dados
+pelos calculos \textit{(region / region\_sz) * region\_sz} para obter a linha e
+\textit{(region \% region\_sz) * region\_sz} para obter a coluna.
+
+\begin{minted}[mathescape,
+                numbersep=3pt,
+                gobble=1,
+                fontsize=\small,
+                framesep=2mm]{c}
+
+    /* checks region correctness */
+    int check_region(int id, int region)
+    {
+        int flag = 0x0;
+
+        /* calculates region's first element row and column */
+        int region_sz = (int) sqrt(SIZE);
+        int si = (region / region_sz) * region_sz;
+        int sj = (region % region_sz) * region_sz;
+
+        for (int i = 0; i < region_sz; i++) {
+            for (int j = 0; j < region_sz; j++)
+                flag |= 1 << puzzle[si + i][sj + j];
+        }
+
+        if (flag == 0x03FE) /* 0x03FE means all numbers from 1 to 9 are present */
+            return 0;
+
+        printf("Thread %d: Erro na regiao %d\n", id, region + 1);
+        return 1;
+    }
+
+\end{minted}
+
 
 \section{Abordagem paralela}
 A verificação de um Sudoku pode ser vista como a verificação de suas linhas,
@@ -97,8 +153,6 @@ De forma que, a tarefa 22, é do tipo 2, ou seja região, e consite em verificar
 a 4 região.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Uso}
 
 A a verificação do Sudoku inserido pelo usuário pode ser feito pela linha de comando:
@@ -107,6 +161,7 @@ A a verificação do Sudoku inserido pelo usuário pode ser feito pela linha de 
 \end{verbatim}
 
 Exemplo de execução correta do programa:
+
 \begin{verbatim}
 
 ./sudoku input_grid_correto.txt 4
@@ -124,6 +179,7 @@ Erros encontrados: 0
 \end{verbatim}
 
 Exemplo de execução incorreta do programa:
+
 \begin{verbatim}
 ./sudoku input_grid_errado.txt 4
 Quebra-cabecas fornecido:
@@ -156,5 +212,6 @@ problema pequeno, o \textit{overhead} na utilização de mais threads que o
 necessario é substancial, e para esse problema o número de threads "necessárias"
 é bem pequeno,  de forma que a comparação de tempo entra a solução sequencial e
 paralela não obtem resultados muito satisfatorios.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \end{document}

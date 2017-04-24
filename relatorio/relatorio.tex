@@ -8,6 +8,7 @@
 \usepackage{fancyvrb}
 \usepackage{geometry}
 \usepackage{minted}
+\usepackage{amsmath}
 
 \geometry{
     a4paper,
@@ -57,23 +58,32 @@
 \pagenumbering{arabic}
 
 \section{Sudoku}
-O Sudoku é um quebra cabeça de disposição de números. Um Sudoko 9x9, por exemplo,
-está correto quando os números de 1 à 9 estão preenchendo todos os espaços vazios
-de forma a não haver nenhuma repetição nas linhas, colunas nem regiões.
+O Sudoku é um quebra-cabeça de disposição de números. O quebra-cabeça é 
+representado por uma matriz quadradra de ordem 9, composta de submatrizes de 
+ordem 3 chamadas blocos ou regiões. Para resolver, cada uma das 81 células 
+devem ser preenchidas com números de 1 à 9, de forma que cada uma das linhas, 
+colunas e regiões contenha cada um dos números possíveis. Um Sudoku 9x9, então, 
+está correto quando os números de 1 à 9 estão preenchendo todos as células da 
+matriz de forma a não haver nenhuma repetição nas linhas, colunas nem regiões.
+De forma geral pode-se construir um quebra-cabeça baseado em matrizes 
+$n^2 \times n^2$.
 
 \section{Verificando a Solução de um Sudoku}
 
 Verificar a solução de um Sudoku consiste em checar a existência de números
 repetidos em todas as linhas, colunas e regiões. Para checar uma linha,
-por exemplo, utilizamos um valor inteiro auxiliar \textit{flag} , onde o bit
-\textit{X} de \textit{flag} deve estar no valor lógico um quando o número \textit{X}
-está presente naquela linha.
+a estratégia utilizada foi utilizar um \textit{bitfield} \textit{flag}, onde o 
+bit na posição \textit{X} de \textit{flag} deve estar no valor lógico 1 quando 
+o número \textit{X} está presente naquela linha.
 A cada número lido da linha, a sua posição correspondente em \textit{flag} é
 marcada através de um ou lógico entre a \textit{flag} e 1 deslocado à esquerda
 o número encontrado de vezes, de forma a indicar que o número foi visto.
-Ao final da linha o valor de \textit{flag} deve ser igual a 0x03FE, ou seja,
- todos os números de 1 à 9 foram encontrados, caso contrario um erro deve ser
-apontado naquela linha.
+Ao final da linha o valor de \textit{flag} deve ser igual a 0x03FE, ou seja, 
+todos os números de 1 à 9 foram encontrados, caso contrário um erro deve ser
+apontado naquela linha. Note que se um número já encontrado é lido novamente, o 
+bit na posição relativa àquele número volta a ser 0 e o teste falhará. Mesmo no 
+caso de um terceiro número repetido, ao menos dois dos outros números estarão 
+faltando e o teste falhará.
 
 \begin{minted}[mathescape,
                 numbersep=3pt,
@@ -81,7 +91,7 @@ apontado naquela linha.
                 fontsize=\small,
                 framesep=2mm]{c}
 
-    /* checks row correcteness */
+    /* checks row correctness */
     int check_row(int id, int row)
     {
         int flag = 0x0;
@@ -98,11 +108,14 @@ apontado naquela linha.
 \end{minted}
 
 
-O princípio usado para verificar colunas e regiões é o mesmo. Porém para as
-colunas a iteração é feira sobre as linhas ao invés das colunas. O diferencial
-das regiões é que a linha e coluna do primeiro elemento de uma região são dados
-pelos cálculos \textit{(region / region\_sz) * region\_sz} para obter a linha e
-\textit{(region \% region\_sz) * region\_sz} para obter a coluna.
+O princípio usado para verificar colunas e regiões é o mesmo. Porém a forma de 
+iterar sobre os elementos é diferente. Nas regiões é necessário obeter linha e 
+coluna do primeiro elemento, que são dados pelos expressões 
+\textit{(region / region\_sz) * region\_sz} para obter a linha e
+\textit{(region \% region\_sz) * region\_sz} para obter a coluna, onde 
+\textit{region_sz} é a ordem da região (3 no caso de um Sudoku normal). A uso 
+de uma expressão para calcular a ordem da região é motivado pela possibilidade 
+de extensão para quebra-cabeças de tamanhos maiores.
 
 \begin{minted}[mathescape,
                 numbersep=3pt,
@@ -139,17 +152,18 @@ pelos cálculos \textit{(region / region\_sz) * region\_sz} para obter a linha e
 A verificação de um Sudoku pode ser vista como a verificação de suas linhas,
 colunas e regiões, ou seja, podemos dividir o problema em 27 problemas menores,
 checar uma linha, uma coluna ou uma região.
-Essa divisão pode ser atingida pelo calculo \textit{load = (SIZE * 3) / nthreads} e
-\textit{rest = (SIZE * 3)}, onde cada thread fara no mínimo \textit{load} tarefas,
-as \textit{rest} primeiras faram \textit{load} + 1.
+Essa divisão pode ser atingida pelo cálculo \textit{load = (SIZE * 3) / nthreads} e
+\textit{rest = (SIZE * 3)}, onde cada thread realizará no mínimo \textit{load} 
+tarefas, sendo que as \textit{rest} primeiras realizarão \textit{load} + 1.
 \par
-Além disso existem 3 tipos de tarefas linhas - tipo 0 -, colunas - tipo 1-  e
-regiões - tipo 2-, os tipos são obtidos pelo calculo \textit{job\_type = i / 9}
-onde \textit{i} é o número da tarefa. Dentro dos tipos existem 9 tarefas, nas
-linhas, por exemplo, exitem 9 colunas, de 0 à 8. O mesmo pode ser observado com
-as colunas e regiões. A tarefa pode ser obtida pelo calculo \textit{where = i \% 9}.
+Além disso existem 3 tipos de tarefas: linhas - tipo 0 -, colunas - tipo 1-  e
+regiões - tipo 2-. Os tipos são obtidos pelo cálculo \textit{job\_type = i / 9}
+onde \textit{i} é o número da tarefa. Dentro de cada tipo existem 9 tarefas, 
+referentes linhas, colunas e regiões. As linhas, por exemplo, são numeradas de 
+0 à 8. O mesmo pode ser observado com as colunas e regiões. A tarefa pode ser 
+obtida pelo cálculo \textit{where = i \% 9}.
 \par
-De forma que, a tarefa 22, é do tipo 2, ou seja região, e consiste em verificar
+Desta forma a tarefa 22, é do tipo 2, ou seja. região, e consiste em verificar
 a 4 região.
 
 
@@ -208,10 +222,10 @@ colunas, 2 em linhas e 2 em regiões da solução dada.
 
 \section{Considerações Finais}
 Dado que o problema não é escalável, ou seja, possui um tamanho fixo, e é um
-problema pequeno, o \textit{overhead} na utilização de mais threads que o
-necessário é substancial, e para esse problema o número de threads "necessárias"
-é bem pequeno,  de forma que a comparação de tempo entra a solução sequencial e
-paralela não obtém resultados muito satisfatórios.
+problema pequeno, e consequentemente o número de threads "necessárias" também é 
+pequeno. O \textit{overhead} na utilização de mais threads que o necessário é 
+substancial, de forma que a solução paralela não obtém resultados expressivos 
+e comparação com a solução sequencial em termos de tempo de execução.
 
 
 \end{document}
